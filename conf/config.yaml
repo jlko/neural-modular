@@ -1,0 +1,35 @@
+defaults:
+  - hydra: default
+
+wandb:
+  use_wandb: True
+  project: neural-filter
+
+experiment:
+  random_seed: -1
+
+dataset:
+  name: RandomLGSSM
+  filename: random.pkl
+  type: regression
+
+trainer:
+  max_epochs: 500
+  optimizer: adam
+  learning_rate: 5e-4
+  weight_decay: 5e-4
+  # this disables early stopping
+  early_stopping_epochs: -1
+  scheduler: cosine
+  loss: mse
+  # this disables the scheduler
+  # remove these for now.
+  # custom_L2_loss: False
+
+# model:
+#   name: MLP
+#   dropout_p: 0
+
+model:
+  name: ResNetMLP
+  dropout_p: 0

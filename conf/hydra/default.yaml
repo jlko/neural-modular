@@ -1,0 +1,3 @@
+# @package _group_
+run:
+  dir: ./outputs/unspecified/${now:%Y-%m-%d-%H-%M-%S}

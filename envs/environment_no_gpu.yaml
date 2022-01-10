@@ -1,0 +1,23 @@
+name: ensembles
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  # - cudatoolkit=10.2
+  - python=3.8
+  - pytorch=1.7
+  - torchvision
+  - pip
+  - pip:
+    - wandb
+    - scikit-learn
+    - pandas
+    - pycodestyle
+    - hydra-core
+    - omegaconf
+    - jupyterlab
+    - notebook
+    - matplotlib
+    - seaborn
+    - tqdm
+    - ipywidgets

@@ -1,0 +1,23 @@
+name: ensembles
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python>3.8
+  - pytorch
+  - torchvision
+  - pip
+  - pip:
+    - laplace-torch
+    # - wandb
+    - scikit-learn
+    - pandas
+    - pycodestyle
+    - hydra-core
+    - omegaconf
+    - jupyterlab
+    - notebook
+    - matplotlib
+    - seaborn
+    - tqdm
+    - ipywidgets
