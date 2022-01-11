@@ -18,7 +18,7 @@ from .utils import LabelSmoothingNLLLoss, L2_loss
 
 class Trainer():
 
-    def __init__(self, model, dataloaders, cfg):
+    def __init__(self, model, data, cfg):
 
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.cfg = cfg
@@ -28,10 +28,10 @@ class Trainer():
         self.model = model.to(device=self.device).type(
             self.dtype)
 
-        self.dataloaders = dataloaders
+        self.data = data
 
         self.train_loader, self.val_loader, self.test_loader = [
-            dataloaders[i] for i in
+            data['loaders'][i] for i in
             ['train_loader', 'val_loader', 'test_loader']]
 
         self.optimizer = self.get_optimizer()
@@ -147,7 +147,7 @@ class Trainer():
             f'validation points.')
 
         m = self.t_cfg['max_epochs']
-        log_every = int(.01 * m) if m >= 500 else 1
+        log_every = int(.05 * m) if m >= 100 else 1
 
         for epoch in range(self.t_cfg['max_epochs']):
             log_epoch = epoch % log_every == 0
@@ -172,7 +172,6 @@ class Trainer():
                 self.scheduler.step()
 
         logging.info('Completed training for acquisition.')
-
         self.model = self.early_stop.best_model
         torch.save(self.model.state_dict(), 'model.pth')
 
@@ -205,7 +204,8 @@ class Trainer():
         if return_loss:
             return self.cn(torch.mean(torch.stack(losses)))
 
-    def evaluate(self, eval_loader, return_preds=False):
+    @torch.no_grad()
+    def evaluate(self, eval_loader, return_preds=False, return_targets=False):
 
         self.model.eval()
         loss_fn = self.eval_loss
@@ -216,21 +216,23 @@ class Trainer():
 
         if return_preds:
             predictions = []
+        if return_targets:
+            targets = []
 
-        with torch.no_grad():
-            for data, target in eval_loader:
+        for data, target in eval_loader:
+            data = data.to(self.device)
+            target = target.to(self.device)
+            prediction = self.model(data)
+            loss = loss_fn(
+                prediction, target, reduction='sum')
+            total_loss += loss
 
-                data = data.to(self.device)
-                target = target.to(self.device)
-                prediction = self.model(data)
-                loss = loss_fn(
-                    prediction, target, reduction='sum')
-                total_loss += loss
-
-                if self.is_class:
-                    correct += (prediction.argmax(1) == target).sum()
-                if return_preds:
-                    predictions.append(self.d(prediction))
+            if self.is_class:
+                correct += (prediction.argmax(1) == target).sum()
+            if return_preds:
+                predictions.append(self.d(prediction))
+            if return_targets:
+                targets.append(self.d(target))
 
         total_loss /= len(eval_loader.dataset)
 
@@ -244,6 +246,8 @@ class Trainer():
 
         if return_preds:
             out_dict['predictions'] = self.dcn(torch.cat(predictions, 0))
+        if return_targets:
+            out_dict['targets'] = self.dcn(torch.cat(targets, 0))
 
         return out_dict
 
@@ -275,3 +279,14 @@ class Trainer():
                 log_dict[f'{type}_{metric}'] = value
 
         wandb.log(log_dict, step=epoch)
+
+    @torch.no_grad()
+    def predict(self, loader):
+        self.model.eval()
+        predictions = []
+        for (data, ) in loader:
+            data = data.to(self.device)
+            prediction = self.model(data)
+            predictions.append(self.d(prediction))
+        predictions = self.dcn(torch.cat(predictions, 0))
+        return predictions
