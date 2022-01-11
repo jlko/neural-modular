@@ -1,3 +1,6 @@
+import copy
+
+
 class EarlyStop:
     def __init__(self, model, max_patience):
         self.model = model
@@ -12,7 +15,7 @@ class EarlyStop:
             return False
 
         # update current best nll and model, reset patience
-        if val_nll < best:
+        if val_nll < self.best:
             self.best = val_nll
             self.best_model = copy.deepcopy(self.model)
             self.patience = 0
