@@ -166,6 +166,7 @@ class Trainer():
                 logging.info(
                     f'Patience reached - stopping training. '
                     f'Best was {self.early_stop.best}')
+                break
 
             if self.scheduler is not None:
                 self.scheduler.step()
