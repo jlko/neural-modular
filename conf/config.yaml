@@ -7,7 +7,7 @@ wandb:
 
 experiment:
   random_seed: -1
-  dtype: half # half, float, double
+  dtype: float # half, float, double
 
 dataset:
   _target_: neural.datasets.CIFAR10 # CIFAR10, FashionMNIST
