@@ -1,4 +1,4 @@
-# neural-net-template
+# neural-modular
 
 
 Simple codebase for flexible neural net training.
