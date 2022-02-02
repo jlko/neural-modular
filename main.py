@@ -3,14 +3,14 @@ import os
 import logging
 import hydra
 from hydra.utils import instantiate
-import warnings
+import wandb
 
 import numpy as np
 import torch
 
 from omegaconf import OmegaConf
 
-from neural.utils import maps, flatten_dict
+from neural.utils import flatten_dict
 from neural.train import Trainer
 
 @hydra.main(config_path='conf', config_name='config')
@@ -19,12 +19,9 @@ def main(cfg):
     """
 
     if cfg.wandb.use_wandb:
-        import wandb
         wandb_cfg = flatten_dict(dict(cfg))
-
         wandb_args = dict(
             project=cfg.wandb.project,
-            entity=cfg.wandb.entity,
             config=wandb_cfg)
         wandb.init(**wandb_args)
 
