@@ -3,33 +3,33 @@ defaults:
 
 wandb:
   use_wandb: True
-  project: neural-filter
+  project: neural-net-template
+  entity: jlko
 
 experiment:
   random_seed: -1
+  dtype: half # half, float, double
 
 dataset:
-  name: RandomLGSSM
-  filename: random.pkl
-  type: regression
+  name: CIFAR10
+  # name: FashionMNIST
+  val_size: 5000
+  train_batch_size: 128
+  test_batch_size: 1024
 
 trainer:
-  max_epochs: 500
-  optimizer: adam
-  learning_rate: 5e-4
-  weight_decay: 5e-4
-  # this disables early stopping
-  early_stopping_epochs: -1
+  max_epochs: 30
+  early_stopping_epochs: 10
   scheduler: cosine
-  loss: mse
-  # this disables the scheduler
-  # remove these for now.
-  # custom_L2_loss: False
-
-# model:
-#   name: MLP
-#   dropout_p: 0
+  loss: crossentropy
+  custom_L2_loss: False
+  optimizer:
+    name: sgd
+    learning_rate: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
 
 model:
-  name: ResNetMLP
-  dropout_p: 0
+  # name: ResNet18
+  name: ResNet18Tweaked
+  # name: Mobilenetv3

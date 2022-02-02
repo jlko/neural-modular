@@ -50,12 +50,6 @@ def L2_loss(model, weights):
     return penalty
 
 
-def log_loss(outputs, targets, *args, **kwargs):
-    return torch.nn.functional.nll_loss(
-        torch.log(outputs),
-        targets, *args, **kwargs)
-
-
 """Everything below from
 https://github.com/wangleiofficial/label-smoothing-pytorch
 /blob/main/label_smoothing.py

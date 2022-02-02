@@ -1,4 +1,8 @@
+from jax import custom_gradient
 import torch.nn as nn
+import torchvision.models as models
+
+from neural.custom_resnet.models import resnet18 as custom_resnet18
 
 
 # maybe look up in that neurips paper how they
@@ -108,3 +112,62 @@ class LSTM(nn.Module):
         out = self.linear(h_n)
 
         return out
+
+
+class ResNet18(nn.Module):
+    """ResNet 18"""
+    def __init__(self, cfg, data_in, data_out):
+        super().__init__()
+        self.model = models.regnet_y_400mf(num_classes=data_out)
+
+        # greyscale images
+        if len(data_in) == 2:
+            fix_conv1(self.model)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class Mobilenetv3(nn.Module):
+    """ResNet 18"""
+    def __init__(self, cfg, data_in, data_out):
+        super().__init__()
+        self.model = models.mobilenet_v3_small(num_classes=data_out)
+
+        # greyscale images
+        if len(data_in) == 2:
+            raise
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class ResNet18Tweaked(nn.Module):
+    """Tweaked ResNet18.
+
+    See source for further info, has some CIFAR specific tweaks.
+
+    Could probably be sped up? Is half the speed of built-in ResNet18 for some
+    reason.
+    """
+    def __init__(self, cfg, data_in, data_out):
+        super().__init__()
+        self.model = custom_resnet18(num_classes=data_out)
+
+        # greyscale images
+        if len(data_in) == 2:
+            fix_conv1(self.model)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+def fix_conv1(model):
+    c1 = model.conv1
+    model.conv1 = nn.Conv2d(
+        in_channels=1,
+        out_channels=c1.out_channels,
+        kernel_size=c1.kernel_size,
+        stride=c1.stride,
+        padding=c1.padding,
+        bias=c1.bias)

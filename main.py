@@ -9,9 +9,8 @@ import torch
 
 from omegaconf import OmegaConf
 
-from neural.utils import maps
+from neural.utils import maps, flatten_dict
 from neural.train import Trainer
-
 
 @hydra.main(config_path='conf', config_name='config')
 def main(cfg):
@@ -20,15 +19,11 @@ def main(cfg):
 
     if cfg.wandb.use_wandb:
         import wandb
-        # import pandas
-        # wandb_cfg = pandas.json_normalize(dict(cfg), sep='_')
-        # wandb_cfg = wandb_cfg.to_dict(orient='records')[0]
-        from neural.utils import flatten_dict
         wandb_cfg = flatten_dict(dict(cfg))
 
         wandb_args = dict(
             project=cfg.wandb.project,
-            entity="jlko",
+            entity=cfg.wandb.entity,
             config=wandb_cfg)
         wandb.init(**wandb_args)
 
@@ -47,7 +42,7 @@ def main(cfg):
         os.system('touch cuda_failure.txt')
 
     dataloaders = (
-        maps.dataset[cfg.dataset.name](cfg.dataset, seed))
+        maps.dataset[cfg.dataset.name](cfg.dataset))
 
     data_in, data_out = [dataloaders['info'][i] for i in ['D_in', 'D_out']]
 
@@ -59,9 +54,8 @@ def main(cfg):
     # train with early stopping
     trainer.train_to_convergence()
 
-    # predict on val_model_selection set, predict on test set
     logging.info('Training completed sucessfully.')
-    logging.info('Run completed suc essfully.')
+    logging.info('Run completed sucessfully.')
 
 
 if __name__ == '__main__':

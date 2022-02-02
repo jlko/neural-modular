@@ -1,15 +1,15 @@
-name: ensembles
+name: neural
 channels:
   - pytorch
   - defaults
 dependencies:
-  - python>3.8
+  - python
   - pytorch
   - torchvision
   - pip
   - pip:
     - laplace-torch
-    # - wandb
+    - wandb
     - scikit-learn
     - pandas
     - pycodestyle
@@ -21,3 +21,9 @@ dependencies:
     - seaborn
     - tqdm
     - ipywidgets
+
+
+# to get it running on 3090
+# instead first install envs/environment.yaml
+# and then `conda install pytorch torchvision cudatoolkit=11 -c pytorch-nightly`
+# and then pip install laplace-torch

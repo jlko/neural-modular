@@ -23,10 +23,13 @@ class Trainer():
         self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         self.cfg = cfg
         self.t_cfg = cfg.trainer
-        self.dtype = torch.double
 
-        self.model = model.to(device=self.device).type(
-            self.dtype)
+        self.dtype = dict(
+            double=torch.double,
+            float=torch.float,
+            half=torch.half)[cfg.experiment.dtype]
+
+        self.model = model.to(device=self.device, dtype=self.dtype)
 
         self.data = data
 
@@ -37,8 +40,8 @@ class Trainer():
         self.optimizer = self.get_optimizer()
         self.scheduler = self.get_scheduler(self.optimizer)
         self.loss = self.get_loss()
-        self.is_class = self.cfg.dataset.type == 'classification'
-        self.eval_loss = F.nll_loss if self.is_class else F.mse_loss
+        self.is_class = data['info']['type'] == 'classification'
+        self.eval_loss = F.cross_entropy if self.is_class else F.mse_loss
         self.early_stop = EarlyStop(
             self.model, self.t_cfg['early_stopping_epochs'])
 
@@ -47,6 +50,7 @@ class Trainer():
         logging.info(
             f'Initialising model \n'
             f'\t on device: {self.device}\n'
+            f'\t dtype: {self.dtype}\n'
             f'\t optimizer: {self.optimizer.__class__}\n'
             f'\t scheduler: {self.scheduler}\n'
             f'\t loss: {self.loss}\n'
@@ -75,19 +79,20 @@ class Trainer():
         return tensor.cpu().numpy()
 
     def get_optimizer(self):
-        c = self.t_cfg.get('optimizer', False)
+        c = self.t_cfg.optimizer
 
-        if not c or c == 'adam':
+        if c.name == 'adam':
             optimizer = torch.optim.Adam(
                     self.model.parameters(),
-                    lr=self.t_cfg['learning_rate'],
-                    weight_decay=self.t_cfg['weight_decay'],)
+                    lr=c.learning_rate,
+                    weight_decay=c.weight_decay,)
 
-        elif c == 'sgd':
+        elif c.name == 'sgd':
             optimizer = torch.optim.SGD(
                 self.model.parameters(),
-                lr=self.t_cfg['learning_rate'],
-                momentum=0.9, weight_decay=self.t_cfg['weight_decay'])
+                lr=c.learning_rate,
+                momentum=c.momentum,
+                weight_decay=c.weight_decay)
         else:
             raise ValueError
 
@@ -116,6 +121,9 @@ class Trainer():
             scheduler = torch.optim.lr_scheduler.MultiStepLR(
                 optimizer, milestones=milestones, gamma=0.2)
 
+        else:
+            raise ValueError
+
         return scheduler
 
     def get_loss(self):
@@ -127,6 +135,8 @@ class Trainer():
             loss_base = LabelSmoothingNLLLoss(lam)
         elif loss == 'nll':
             loss_base = F.nll_loss
+        elif loss == 'crossentropy':
+            loss_base = F.cross_entropy
         elif loss == 'mse':
             loss_base = F.mse_loss
         else:
@@ -147,7 +157,7 @@ class Trainer():
             f'validation points.')
 
         m = self.t_cfg['max_epochs']
-        log_every = int(.05 * m) if m >= 100 else 1
+        log_every = int(.01 * m) if m >= 1000 else 1
 
         for epoch in range(self.t_cfg['max_epochs']):
             log_epoch = epoch % log_every == 0
@@ -163,9 +173,6 @@ class Trainer():
             val_loss = val_results['metrics'][self.eval_loss.__name__]
 
             if self.early_stop.update(val_loss):
-                logging.info(
-                    f'Patience reached - stopping training. '
-                    f'Best was {self.early_stop.best}')
                 break
 
             if self.scheduler is not None:
@@ -177,29 +184,24 @@ class Trainer():
 
     def run_epoch(self, return_loss=False):
         self.model.train()
+
         if return_loss:
             losses = []
 
         for data, target in self.train_loader:
 
-            data = data.to(self.device)
-            target = target.to(self.device)
+            data = data.to(device=self.device, dtype=self.dtype)
+            target = target.to(device=self.device)
 
-            # supposed to be faster
-            # careful if optim has more than model params
+            # faster with None
             self.model.zero_grad(set_to_none=True)
-            # self.optimizer.zero_grad()
-
             prediction = self.model(data)
-
             loss = self.loss(prediction, target)
+            loss.backward()
+            self.optimizer.step()
 
             if return_loss:
                 losses.append(self.d(loss))
-
-            loss.backward()
-
-            self.optimizer.step()
 
         if return_loss:
             return self.cn(torch.mean(torch.stack(losses)))
@@ -220,8 +222,8 @@ class Trainer():
             targets = []
 
         for data, target in eval_loader:
-            data = data.to(self.device)
-            target = target.to(self.device)
+            data = data.to(device=self.device, dtype=self.dtype)
+            target = target.to(device=self.device)
             prediction = self.model(data)
             loss = loss_fn(
                 prediction, target, reduction='sum')
@@ -285,7 +287,7 @@ class Trainer():
         self.model.eval()
         predictions = []
         for (data, ) in loader:
-            data = data.to(self.device)
+            data = data.to(device=self.device, dtype=self.dtype)
             prediction = self.model(data)
             predictions.append(self.d(prediction))
         predictions = self.dcn(torch.cat(predictions, 0))

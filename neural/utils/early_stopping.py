@@ -1,3 +1,4 @@
+import logging
 import copy
 
 
@@ -23,7 +24,11 @@ class EarlyStop:
             self.patience += 1
 
         # trigger early stopping
-        if self.patience > self.max_patience:
+        if self.patience >= self.max_patience:
+            logging.info(
+                    f'Patience reached - stopping training. '
+                    f'Best was {self.best:.4f}.')
+
             return True
 
         return False
