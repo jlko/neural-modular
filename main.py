@@ -1,4 +1,3 @@
-"""Main active testing loop."""
 import os
 import logging
 import hydra
@@ -46,7 +45,6 @@ def main(cfg):
     trainer = Trainer(model, dataloaders, cfg)
     logging.info('Init complete.')
 
-    # train with early stopping
     trainer.train_to_convergence()
 
     logging.info('Training completed sucessfully.')
