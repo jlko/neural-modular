@@ -116,12 +116,12 @@ class LSTM(nn.Module):
 
 class ResNet18(nn.Module):
     """ResNet 18"""
-    def __init__(self, cfg, data_in, data_out):
+    def __init__(self, cfg, data_info):
         super().__init__()
-        self.model = models.regnet_y_400mf(num_classes=data_out)
+        self.model = models.regnet_y_400mf(num_classes=data_info['D_out'])
 
         # greyscale images
-        if len(data_in) == 2:
+        if len(data_info['D_in']) == 2:
             fix_conv1(self.model)
 
     def forward(self, x):
@@ -130,12 +130,12 @@ class ResNet18(nn.Module):
 
 class Mobilenetv3(nn.Module):
     """ResNet 18"""
-    def __init__(self, cfg, data_in, data_out):
+    def __init__(self, cfg, data_info):
         super().__init__()
-        self.model = models.mobilenet_v3_small(num_classes=data_out)
+        self.model = models.mobilenet_v3_small(num_classes=data_info['D_out'])
 
         # greyscale images
-        if len(data_in) == 2:
+        if len(data_info['D_in']) == 2:
             raise
 
     def forward(self, x):
@@ -150,12 +150,12 @@ class ResNet18Tweaked(nn.Module):
     Could probably be sped up? Is half the speed of built-in ResNet18 for some
     reason.
     """
-    def __init__(self, cfg, data_in, data_out):
+    def __init__(self, cfg, data_info):
         super().__init__()
-        self.model = custom_resnet18(num_classes=data_out)
+        self.model = custom_resnet18(num_classes=data_info['D_out'])
 
         # greyscale images
-        if len(data_in) == 2:
+        if len(data_info['D_in']) == 2:
             fix_conv1(self.model)
 
     def forward(self, x):

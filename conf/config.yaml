@@ -11,11 +11,11 @@ experiment:
   dtype: half # half, float, double
 
 dataset:
-  name: CIFAR10
-  # name: FashionMNIST
-  val_size: 5000
-  train_batch_size: 128
-  test_batch_size: 1024
+  _target_: neural.datasets.CIFAR10 # CIFAR10, FashionMNIST
+  cfg:
+    val_size: 5000
+    train_batch_size: 128
+    test_batch_size: 1024
 
 trainer:
   max_epochs: 30
@@ -30,6 +30,5 @@ trainer:
     weight_decay: 0.0005
 
 model:
-  # name: ResNet18
-  name: ResNet18Tweaked
-  # name: Mobilenetv3
+  _target_: neural.models.ResNet18Tweaked # ResNet18, ResNet18Tweaked, Mobilenetv3
+  cfg:

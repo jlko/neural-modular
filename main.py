@@ -2,6 +2,7 @@
 import os
 import logging
 import hydra
+from hydra.utils import instantiate
 import warnings
 
 import numpy as np
@@ -41,12 +42,9 @@ def main(cfg):
     else:
         os.system('touch cuda_failure.txt')
 
-    dataloaders = (
-        maps.dataset[cfg.dataset.name](cfg.dataset))
+    dataloaders = instantiate(cfg.dataset)
 
-    data_in, data_out = [dataloaders['info'][i] for i in ['D_in', 'D_out']]
-
-    model = maps.model[cfg.model.name](cfg.model, data_in, data_out)
+    model = instantiate(cfg.model, data_info=dataloaders['info'])
 
     trainer = Trainer(model, dataloaders, cfg)
     logging.info('Init complete.')
