@@ -1,4 +1,3 @@
-from jax import custom_gradient
 import torch.nn as nn
 import torchvision.models as models
 
@@ -15,7 +14,7 @@ class MLP(nn.Module):
         nonlin = nn.LeakyReLU
         bn = nn.BatchNorm1d
         self.block = nn.Sequential(*[
-            nn.Linear(data_info['D_in'] 200),
+            nn.Linear(data_info['D_in'], 200),
             bn(200),
             nonlin(),
             nn.Linear(200, 200),
@@ -28,7 +27,7 @@ class MLP(nn.Module):
             bn(50),
             nonlin(),
             nn.Dropout(p),
-            nn.Linear(50, data_info['D_out'],
+            nn.Linear(50, data_info['D_out']),
         ])
 
          # todo add bias
@@ -46,7 +45,7 @@ class ResNetMLP(nn.Module):
         bn = nn.BatchNorm1d
 
         self.block_1 = nn.Sequential(*[
-            nn.Linear(data_info['D_in'] 200),
+            nn.Linear(data_info['D_in'], 200),
             # bn(200),
             nonlin(),
             nn.Linear(200, 200),
@@ -67,13 +66,13 @@ class ResNetMLP(nn.Module):
             nn.Linear(50, 50),
             bn(50),
             nonlin(),
-            nn.Linear(50, data_info['D_out'],
+            nn.Linear(50, data_info['D_out']),
             ])
 
         self.blocks = [self.block_1, self.block_2, self.block_3]
 
-        self.linear_1 = nn.Linear(data_info['D_in'] 200)
-        self.linear_2 = nn.Linear(data_info['D_in'] 50)
+        self.linear_1 = nn.Linear(data_info['D_in'], 200)
+        self.linear_2 = nn.Linear(data_info['D_in'], 50)
         self.linears = [
             self.linear_1, self.linear_2, None]
 
@@ -93,14 +92,14 @@ class LSTM(nn.Module):
         super().__init__()
 
         self.model = nn.LSTM(
-            input_size=data_info['D_in']
+            input_size=data_info['D_in'],
             hidden_size=cfg.hidden_size,
             num_layers=cfg.num_layers,
             dropout=cfg.dropout_p,
             batch_first=True)
 
         self.linear = nn.Linear(
-            cfg.num_layers * cfg.hidden_size, data_info['D_out']
+            cfg.num_layers * cfg.hidden_size, data_info['D_out'])
 
     def forward(self, x):
         output, (h_n, c_n) = self.model(x)
