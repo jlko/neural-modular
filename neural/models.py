@@ -4,7 +4,6 @@ import torchvision.models as models
 from neural.custom_resnet.models import resnet18 as custom_resnet18
 
 
-# maybe look up in that neurips paper how they
 class MLP(nn.Module):
     def __init__(self, cfg, data_info):
         super().__init__()
