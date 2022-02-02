@@ -4,9 +4,7 @@ from hydra.utils import instantiate
 
 import logging
 from pathlib import Path
-import omegaconf
 from omegaconf import OmegaConf
-
 import torch
 
 
