@@ -1,5 +1,6 @@
 # neural-modular
 
+## Info
 
 Simple codebase for flexible neural net training.
 
@@ -11,11 +12,21 @@ Option to enable wandb for run-tracking and cloud-storage.
 
 Run `python main.py` to train your model.
 
+## Setup
+
+Run
+```
+conda env update -f envs/environment.yaml
+cona activate neural
+```
+to install and activate the conda environent.
+
+
 ## Understanding the Code
 
 * `main.py` is the main entry point
 * `conf/config.yaml` is the default config in standard Hydra syntax:
-    * by running `python main.py +experiments=blabla.yaml` you can overwrite and extend the config by whatever you put in `experiments/blabla.yaml`.
+    * by running `python main.py +experiments=blabla` you can overwrite and extend the config by whatever you put in `experiments/blabla.yaml`.
     * alternatively you can run `python main.py +new=arg` to add `new` to the config, or `python main.py new=arg` to overwrite key `new`
 
 * using the config, we then instantiate a dataset from `neural.datasets` and a model from `neural.models`
