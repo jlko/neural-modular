@@ -8,7 +8,6 @@ dependencies:
   - torchvision
   - pip
   - pip:
-    - laplace-torch
     - wandb
     - scikit-learn
     - pandas
@@ -26,4 +25,3 @@ dependencies:
 # to get it running on 3080
 # instead first install envs/environment.yaml
 # and then `conda install pytorch torchvision cudatoolkit=11 -c pytorch-nightly`
-# and then pip install laplace-torch
